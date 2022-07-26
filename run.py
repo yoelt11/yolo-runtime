@@ -88,7 +88,7 @@ Main Function
 '''
 if __name__ == '__main__':
 
-	MODEL_PATH = '/home/etorres/Documents/in-work/computer-vision-models/object-detection-models/YOLOv7/yolov7-tiny.onnx'
+	MODEL_PATH = './object-detection-models/YOLOv7/yolov7-tiny.onnx'
 	inference_engine = onnx_run(MODEL_PATH)
 	
 	# x = np.random.rand(1,3,384,640) <== model input size
