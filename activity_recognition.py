@@ -66,21 +66,41 @@ def interpret_output(outputs, image, ratio, dwdh):
 	if image.size != 0:
 		h, w = .9473 ,1#image.shape[0], image.shape[1]
 		threshold = .35
+		rec1 = [0,0,1,1]
 		for i, (batch_id, x0, y0, x1, y1, cls_id, score) in enumerate(outputs):
-			if score >= threshold:
-				box = np.array([x0,y0,x1,y1])
-				box -= np.array(dwdh*2)
-				box /= ratio
-				box = box.round().astype(np.int32).tolist()
-				cls_id = int(cls_id)
-				name = names[cls_id]
-				color = colors[name] #(np.random.randint(0,255), np.random.randint(0,255), np.random.randint(0,255))
-				name += ' '+str(score)
-				thickness = 2
-				image = cv2.rectangle(image,box[:2],box[2:],color,thickness)
-				image = cv2.putText(image,name,(box[0], box[1] - 2),cv2.FONT_HERSHEY_SIMPLEX,0.75,[225, 255, 255],thickness=2)  
+			if cls_id == 0:
+				rec1 = [x0,y0,x1,y1]
+			rec2 = [x0,y0,x1,y1]
+			if checkOverlap(rec1, rec2)[0]:
+				if score >= threshold:
+					box = np.array([x0,y0,x1,y1])
+					box -= np.array(dwdh*2)
+					box /= ratio
+					box = box.round().astype(np.int32).tolist()
+					cls_id = int(cls_id)
+					name = names[cls_id]
+					color = colors[name] #(np.random.randint(0,255), np.random.randint(0,255), np.random.randint(0,255))
+					name += ' '+str(score)
+					thickness = 2
+					image = cv2.rectangle(image,box[:2],box[2:],color,thickness)
+					image = cv2.putText(image,name,(box[0], box[1] - 2),cv2.FONT_HERSHEY_SIMPLEX,0.75,[225, 255, 255],thickness=2)  
 
 	return image, outputs
+
+def checkOverlap(rec1, rec2):
+
+    # check if either rectangle is actually a line
+    if (rec1[0] == rec1[2] or rec1[1] == rec1[3] or 
+        rec2[0] == rec2[2] or rec2[1] == rec2[3]):
+        # the line cannot have positive overlap
+        return False, 0
+
+    
+    dx = min(rec1[2], rec2[2]) - max(rec1[0], rec2[0])
+    dy = min(rec1[3], rec2[3]) - max(rec1[1], rec2[1])
+    area = dx * dy 
+
+    return (dx > 0 and dy > 0), area
 
 
 '''
